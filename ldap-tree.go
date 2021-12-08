@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"regexp"
 
 	"github.com/go-ldap/ldap/v3"
 )
@@ -25,7 +26,13 @@ func Get_Manager(conn *ldap.Conn, uid string) string {
 		fmt.Println("Failed to search: %s", err)
 	}
 
-	return sr.Entries[0].GetAttributeValue("manager")
+	manager := sr.Entries[0].GetAttributeValue("manager")
+	re := regexp.MustCompile("uid=(.*?),")
+	matches := re.FindSubmatch([]byte(manager))
+	if matches != nil {
+		return string(matches[1])
+	}
+	return ""
 }
 
 func main() {
@@ -36,6 +43,8 @@ func main() {
 	defer conn.Close()
 
 	manager := Get_Manager(conn, os.Args[2])
-
-	fmt.Println(manager)
+	for manager != "" {
+		fmt.Println(manager)
+		manager = Get_Manager(conn, manager)
+	}
 }
