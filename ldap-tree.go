@@ -38,7 +38,7 @@ func GetManager(conn *ldap.Conn, uid string) string {
 func GetHeirarchy(conn *ldap.Conn, uid string) []string {
 	managers := []string{uid}
 
-	manager := GetManager(conn, os.Args[2])
+	manager := GetManager(conn, uid)
 	for manager != "" {
 		managers = append(managers, manager)
 		manager = GetManager(conn, manager)
@@ -47,7 +47,7 @@ func GetHeirarchy(conn *ldap.Conn, uid string) []string {
 	return managers
 }
 
-func PrintDot(uid string, managers []string) {
+func PrintDot(managers []string) {
 	fmt.Println("digraph regexp {")
 	for i, manager := range managers {
 		fmt.Printf("n%d [label=\"%s\"];\n", i, manager)
@@ -58,6 +58,41 @@ func PrintDot(uid string, managers []string) {
 	}
 	fmt.Println("}")
 }
+
+func PrintDot2(managers1 []string, managers2 []string) {
+	fmt.Println("digraph regexp {")
+
+	common := 0
+	for i := len(managers1) - 1; i >= 0; i-- {
+		fmt.Printf("n%d [label=\"%s\"];\n", i, managers1[i])
+		if managers1[i] == managers2[i] {
+			managers2 = managers2[:len(managers2)-1]
+		} else {
+			if common == 0 {
+				common = i + 1
+			}
+		}
+
+		if i == len(managers1)-1 {
+			continue
+		}
+		fmt.Printf("n%d -> n%d;\n", i, i+1)
+	}
+
+	last := 0
+	for i, manager := range managers2 {
+		fmt.Printf("n%d [label=\"%s\"];\n", len(managers1)+i, manager)
+		if i == 0 {
+			continue
+		}
+		fmt.Printf("n%d -> n%d;\n", len(managers1)+i, len(managers1)+i-1)
+		last = len(managers1) + i
+	}
+	fmt.Printf("n%d -> n%d;\n", last, common)
+
+	fmt.Println("}")
+}
+
 func main() {
 	conn, err := ldap.DialURL("ldap://" + os.Args[1] + ":389")
 	if err != nil {
@@ -65,5 +100,8 @@ func main() {
 	}
 	defer conn.Close()
 
-	PrintDot(os.Args[2], GetHeirarchy(conn, os.Args[2]))
+	hei1 := GetHeirarchy(conn, os.Args[2])
+	hei2 := GetHeirarchy(conn, os.Args[3])
+
+	PrintDot2(hei1, hei2)
 }
