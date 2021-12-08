@@ -36,7 +36,7 @@ func GetManager(conn *ldap.Conn, uid string) string {
 }
 
 func GetHeirarchy(conn *ldap.Conn, uid string) []string {
-	managers := []string{}
+	managers := []string{uid}
 
 	manager := GetManager(conn, os.Args[2])
 	for manager != "" {
@@ -47,6 +47,17 @@ func GetHeirarchy(conn *ldap.Conn, uid string) []string {
 	return managers
 }
 
+func PrintDot(uid string, managers []string) {
+	fmt.Println("digraph regexp {")
+	for i, manager := range managers {
+		fmt.Printf("n%d [label=\"%s\"];\n", i, manager)
+		if i == 0 {
+			continue
+		}
+		fmt.Printf("n%d -> n%d;\n", i-1, i)
+	}
+	fmt.Println("}")
+}
 func main() {
 	conn, err := ldap.DialURL("ldap://" + os.Args[1] + ":389")
 	if err != nil {
@@ -54,7 +65,5 @@ func main() {
 	}
 	defer conn.Close()
 
-	for _, manager := range GetHeirarchy(conn, os.Args[2]) {
-		fmt.Println(manager)
-	}
+	PrintDot(os.Args[2], GetHeirarchy(conn, os.Args[2]))
 }
