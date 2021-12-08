@@ -8,7 +8,7 @@ import (
 	"github.com/go-ldap/ldap/v3"
 )
 
-func Get_Manager(conn *ldap.Conn, uid string) string {
+func GetManager(conn *ldap.Conn, uid string) string {
 	searchRequest := ldap.NewSearchRequest(
 		"dc=redhat,dc=com",
 		ldap.ScopeWholeSubtree,
@@ -35,6 +35,18 @@ func Get_Manager(conn *ldap.Conn, uid string) string {
 	return ""
 }
 
+func GetHeirarchy(conn *ldap.Conn, uid string) []string {
+	managers := []string{}
+
+	manager := GetManager(conn, os.Args[2])
+	for manager != "" {
+		managers = append(managers, manager)
+		manager = GetManager(conn, manager)
+	}
+
+	return managers
+}
+
 func main() {
 	conn, err := ldap.DialURL("ldap://" + os.Args[1] + ":389")
 	if err != nil {
@@ -42,9 +54,7 @@ func main() {
 	}
 	defer conn.Close()
 
-	manager := Get_Manager(conn, os.Args[2])
-	for manager != "" {
+	for _, manager := range GetHeirarchy(conn, os.Args[2]) {
 		fmt.Println(manager)
-		manager = Get_Manager(conn, manager)
 	}
 }
