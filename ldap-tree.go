@@ -35,7 +35,7 @@ func GetManager(conn *ldap.Conn, uid string) string {
 	return ""
 }
 
-func GetHeirarchy(conn *ldap.Conn, uid string) []string {
+func GetHierarchy(conn *ldap.Conn, uid string) []string {
 	managers := []string{uid}
 
 	manager := GetManager(conn, uid)
@@ -103,8 +103,8 @@ func main() {
 	}
 	defer conn.Close()
 
-	hei1 := GetHeirarchy(conn, os.Args[2])
-	hei2 := GetHeirarchy(conn, os.Args[3])
+	hei1 := GetHierarchy(conn, os.Args[2])
+	hei2 := GetHierarchy(conn, os.Args[3])
 
 	PrintDot2(hei1, hei2)
 }
