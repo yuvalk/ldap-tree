@@ -67,8 +67,10 @@ func PrintDot2(managers1 []string, managers2 []string) {
         m1 := len(managers1) - i - 1
         m2 := len(managers2) - 1
 		if managers1[m1] == managers2[m2] {
+	        fmt.Printf("n%d [label=\"%s\" color=red];\n", i, managers1[m1])
 			managers2 = managers2[:len(managers2)-1]
 		} else {
+	        fmt.Printf("n%d [label=\"%s\"];\n", i, managers1[m1])
 			if common == 0 {
 				common = i - 1
             }
