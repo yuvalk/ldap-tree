@@ -63,14 +63,15 @@ func PrintDot2(managers1 []string, managers2 []string) {
 	fmt.Println("digraph regexp {")
 
 	common := 0
-	for i := len(managers1) - 1; i >= 0; i-- {
-		fmt.Printf("n%d [label=\"%s\"];\n", i, managers1[i])
-		if managers1[i] == managers2[i] {
+	for i := 0; i < len(managers1); i++ {
+        m1 := len(managers1) - i - 1
+        m2 := len(managers2) - 1
+		if managers1[m1] == managers2[m2] {
 			managers2 = managers2[:len(managers2)-1]
 		} else {
 			if common == 0 {
-				common = i + 1
-			}
+				common = i - 1
+            }
 		}
 
 		if i == len(managers1)-1 {
@@ -88,7 +89,7 @@ func PrintDot2(managers1 []string, managers2 []string) {
 		fmt.Printf("n%d -> n%d;\n", len(managers1)+i, len(managers1)+i-1)
 		last = len(managers1) + i
 	}
-	fmt.Printf("n%d -> n%d;\n", last, common)
+	fmt.Printf("n%d -> n%d;\n", common, last)
 
 	fmt.Println("}")
 }
